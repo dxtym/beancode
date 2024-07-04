@@ -23,7 +23,7 @@ func (d *Decoder) Decode(v any) error {
 	}
 
 	if len(data) == 0 {
-		return errors.New("bencode: empty input")
+		return errors.New("beancode: empty input")
 	}
 
 	var val any
@@ -50,34 +50,42 @@ func (d *Decoder) decode(data []byte) (any, error) {
 	}
 }
 
-func (d *Decoder) write(v, got any) error {
-	switch v := v.(type) {
-	case *any:
-		*v = got
-	case *[]any:
-		val, ok := got.([]any)
+func (d *Decoder) write(v any, got any) error {
+    switch v := v.(type) {
+	case *int:
+		val, ok := got.(int)
 		if !ok {
-			return errors.New("bencode: invalid type")
+			return errors.New("beancode: invalid type")
 		}
 		*v = val
-	case *map[string]any:
-		val, ok := got.(map[string]any)
+	case *string:
+		val, ok := got.(string)
 		if !ok {
-			return errors.New("bencode: invalid type")
+			return errors.New("beancode: invalid type")
 		}
 		*v = val
-	default:
-		// TODO: handle struct
-	}
+    case *[]any:
+        val, ok := got.([]any)
+        if !ok {
+            return errors.New("beancode: invalid type")
+        }
+        *v = val
+    case *map[string]any:
+        val, ok := got.(map[string]any)
+        if !ok {
+            return errors.New("beancode: invalid type")
+        }
+        *v = val
+    }
 
-	return nil
+    return nil
 }
 
 func (d *Decoder) decodeInt(data []byte) (int, error) {
 	d.index++
 	end := bytes.IndexByte(data[d.index:], 'e')
 	if end == -1 {
-		return 0, errors.New("bencode: invalid int")
+		return 0, errors.New("beancode: invalid int")
 	}
 
 	end += d.index
@@ -96,7 +104,7 @@ func (d *Decoder) decodeList(data []byte) ([]any, error) {
 
 	for {
 		if d.index == len(data) {
-			return nil, errors.New("bencode: out of bounds")
+			return nil, errors.New("beancode: out of bounds")
 		}
 		if data[d.index] == 'e' {
 			d.index++
@@ -116,7 +124,7 @@ func (d *Decoder) decodeDict(data []byte) (map[string]any, error) {
 
 	for {
 		if d.index == len(data) {
-			return nil, errors.New("bencode: out of bounds")
+			return nil, errors.New("beancode: out of bounds")
 		}
 		if data[d.index] == 'e' {
 			d.index++
@@ -137,7 +145,7 @@ func (d *Decoder) decodeDict(data []byte) (map[string]any, error) {
 func (d *Decoder) decodeString(data []byte) (string, error) {
 	colon := bytes.IndexByte(data[d.index:], ':')
 	if colon == -1 {
-		return "", errors.New("bencode: invalid string")
+		return "", errors.New("beancode: invalid string")
 	}
 
 	colon += d.index
@@ -149,7 +157,7 @@ func (d *Decoder) decodeString(data []byte) (string, error) {
 	start := colon + 1
 	end := start + length
 	if end > len(data) {
-		return "", errors.New("bencode: invalid string length")
+		return "", errors.New("beancode: invalid string length")
 	}
 
 	d.index = end
