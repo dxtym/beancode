@@ -27,11 +27,9 @@ func (d *Decoder) Decode(v any) error {
 	}
 
 	var val any
-	for d.index < len(data) {
-		val, err = d.decode(data)
-		if err != nil {
-			return err
-		}
+	val, err = d.decode(data)
+	if err != nil {
+		return err
 	}
 
 	return d.write(v, val)
@@ -46,7 +44,7 @@ func (d *Decoder) decode(data []byte) (any, error) {
 	case 'd':
 		return d.decodeDict(data)
 	default:
-		return d.decodeString(data)
+		return d.decodeStr(data)
 	}
 }
 
@@ -76,6 +74,8 @@ func (d *Decoder) write(v any, got any) error {
             return errors.New("beancode: invalid type")
         }
         *v = val
+	default:
+		// TODO: struct
     }
 
     return nil
@@ -130,7 +130,7 @@ func (d *Decoder) decodeDict(data []byte) (map[string]any, error) {
 			d.index++
 			return got, nil
 		}
-		key, err := d.decodeString(data)
+		key, err := d.decodeStr(data)
 		if err != nil {
 			return nil, err
 		}
@@ -142,7 +142,7 @@ func (d *Decoder) decodeDict(data []byte) (map[string]any, error) {
 	}
 }
 
-func (d *Decoder) decodeString(data []byte) (string, error) {
+func (d *Decoder) decodeStr(data []byte) (string, error) {
 	colon := bytes.IndexByte(data[d.index:], ':')
 	if colon == -1 {
 		return "", errors.New("beancode: invalid string")

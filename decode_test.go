@@ -11,95 +11,95 @@ import (
 func TestDecodeEmpty(t *testing.T) {
 	var got string
 	input := ""
-	output := errors.New("beancode: empty input")
+	want := errors.New("beancode: empty input")
 	
 	formatInput := bytes.NewReader([]byte(input))
 	err := NewDecoder(formatInput).Decode(&got)
 	require.Error(t, err)
-	require.Equal(t, output, err)
+	require.Equal(t, want, err)
 }
 
 func TestDecodeInvalidInt(t *testing.T) {
 	var got int
 	input := "3:foo"
-	output := errors.New("beancode: invalid type")
+	want := errors.New("beancode: invalid type")
 
 	formatInput := bytes.NewReader([]byte(input))
 	err := NewDecoder(formatInput).Decode(&got)
 	require.Error(t, err)
-	require.Equal(t, output, err)
+	require.Equal(t, want, err)
 }
 
 func TestDecodeInvalidString(t *testing.T) {
 	var got string
 	input := "i42e"
-	output := errors.New("beancode: invalid type")
+	want := errors.New("beancode: invalid type")
 
 	formatInput := bytes.NewReader([]byte(input))
 	err := NewDecoder(formatInput).Decode(&got)
 	require.Error(t, err)
-	require.Equal(t, output, err)
+	require.Equal(t, want, err)
 }
 
 func TestDecodeInvalidList(t *testing.T) {
 	var got map[string]any
 	input := "li1ei2ei3ee"
-	output := errors.New("beancode: invalid type")
+	want := errors.New("beancode: invalid type")
 
 	formatInput := bytes.NewReader([]byte(input))
 	err := NewDecoder(formatInput).Decode(&got)
 	require.Error(t, err)
-	require.Equal(t, output, err)
+	require.Equal(t, want, err)
 }
 
 func TestDecodeInvalidDict(t *testing.T) {
 	var got []any
 	input := "d3:fooi1e3:bari2e3:booi3ee"
-	output := errors.New("beancode: invalid type")
+	want := errors.New("beancode: invalid type")
 
 	formatInput := bytes.NewReader([]byte(input))
 	err := NewDecoder(formatInput).Decode(&got)
 	require.Error(t, err)
-	require.Equal(t, output, err)
+	require.Equal(t, want, err)
 }
 
 func TestDecodeInt(t *testing.T) {
 	var got int
 	input := "i42e"
-	output := 42
+	want := 42
 
 	formatInput := bytes.NewReader([]byte(input))
 	err := NewDecoder(formatInput).Decode(&got)
 	require.NoError(t, err)
-	require.Equal(t, output, got)
+	require.Equal(t, want, got)
 }
 
 func TestDeCodeString(t *testing.T) {
 	var got string
 	input := "3:foo"
-	output := "foo"
+	want := "foo"
 
 	formatInput := bytes.NewReader([]byte(input))
 	err := NewDecoder(formatInput).Decode(&got)
 	require.NoError(t, err)
-	require.Equal(t, output, got)
+	require.Equal(t, want, got)
 }
 
 func TestDecodeList(t *testing.T) {
 	var got []any
 	input := "l3:foo3:bari42ee"
-	output := []any{"foo", "bar", 42}
+	want := []any{"foo", "bar", 42}
 
 	formatInput := bytes.NewReader([]byte(input))
 	err := NewDecoder(formatInput).Decode(&got)
 	require.NoError(t, err)
-	require.Equal(t, output, got)
+	require.Equal(t, want, got)
 }
 
 func TestDecodeDict(t *testing.T) {
 	var got map[string]any
 	input := "d3:foo3:bar3:barl3:fooi42eee"
-	output := map[string]any{
+	want := map[string]any{
 		"foo": "bar",
 		"bar": []any{"foo", 42},
 	}
@@ -107,5 +107,5 @@ func TestDecodeDict(t *testing.T) {
 	formatInput := bytes.NewReader([]byte(input))
 	err := NewDecoder(formatInput).Decode(&got)
 	require.NoError(t, err)
-	require.Equal(t, output, got)
+	require.Equal(t, want, got)
 }
