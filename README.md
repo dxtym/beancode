@@ -1,5 +1,3 @@
-![beancode-img](https://github.com/dxtym/beancode/assets/100064552/660733ad-b480-4e9a-a046-3573ee70d24f)
-
 ## Beancode
 
 Working with BitTorrent? You need Beancode.
