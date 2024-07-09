@@ -15,8 +15,7 @@ func TestDecodeEmpty(t *testing.T) {
 	
 	formatInput := bytes.NewReader([]byte(input))
 	err := NewDecoder(formatInput).Decode(&got)
-	require.Error(t, err)
-	require.Equal(t, want, err)
+	require.EqualError(t, err, want.Error())
 }
 
 func TestDecodeInvalidInt(t *testing.T) {
