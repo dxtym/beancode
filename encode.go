@@ -8,6 +8,8 @@ import (
 	"strconv"
 )
 
+// TODO: define errors
+
 type Encoder struct {
 	w io.Writer
 	buf bytes.Buffer
@@ -58,8 +60,8 @@ func (e *Encoder) encodeStr(rv reflect.Value) {
 }
 
 func (e *Encoder) encodeList(rv reflect.Value) {
-	e.buf.WriteRune('l')
-	e.w.Write(e.buf.Bytes())
+	var b byte = 0x6c
+	e.w.Write([]byte{b})
 
     for i := 0; i < rv.Len(); i++ {
         e.Encode(rv.Index(i).Interface())
@@ -70,8 +72,8 @@ func (e *Encoder) encodeList(rv reflect.Value) {
 }
 
 func (e *Encoder) encodeDict(rv reflect.Value) {
-	e.buf.WriteRune('d')
-	e.w.Write(e.buf.Bytes())
+	var b byte = 0x64
+	e.w.Write([]byte{b})
 	
 	for _, key := range rv.MapKeys() {
 		e.Encode(key.Interface())
