@@ -36,3 +36,26 @@ func TestMarshal(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, want, val)
 }
+
+func BenchmarkUnmarshal(b *testing.B) {
+	var got map[string]any
+	input := "d3:fool3:boo3:bare3:bood3:fooi100e3:bari100eee"
+
+	for i := 0; i < b.N; i++ {
+		Unmarshal(input, got)
+	}	
+}
+
+func BenchmarkMarshal(b *testing.B) {
+	input := map[string]any{
+		"foo": []any{"boo", "bar"},
+		"boo": map[string]any{
+			"foo": 100,
+			"bar": 100,
+		},
+	}
+
+	for i := 0; i < b.N; i++ {
+		_, _ = Marshal(input)
+	}
+}

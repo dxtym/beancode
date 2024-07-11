@@ -2,7 +2,6 @@ package beancode
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"reflect"
 	"strconv"
@@ -22,11 +21,10 @@ func NewEncoder(w io.Writer) *Encoder {
 func (e *Encoder) Encode(v any) error {
 	rv := reflect.ValueOf(v)
 	if rv.IsZero() {
-		return errors.New("beancode: empty input")
+		return &EncodeError{"empty input"}
 	}
 
 	e.buf.Reset()
-
 	switch rv.Kind() {
 	case reflect.Int:
 		e.encodeInt(rv)
@@ -42,7 +40,7 @@ func (e *Encoder) Encode(v any) error {
 
 	_, err := e.w.Write(e.buf.Bytes())
 	if err != nil {
-		return err
+		return &EncodeError{err.Error()}
 	}
 	return nil
 }
@@ -60,8 +58,7 @@ func (e *Encoder) encodeStr(rv reflect.Value) {
 }
 
 func (e *Encoder) encodeList(rv reflect.Value) {
-	var b byte = 0x6c
-	e.w.Write([]byte{b})
+	e.w.Write([]byte{0x6c})
 
     for i := 0; i < rv.Len(); i++ {
         e.Encode(rv.Index(i).Interface())
@@ -72,8 +69,7 @@ func (e *Encoder) encodeList(rv reflect.Value) {
 }
 
 func (e *Encoder) encodeDict(rv reflect.Value) {
-	var b byte = 0x64
-	e.w.Write([]byte{b})
+	e.w.Write([]byte{0x64})
 	
 	for _, key := range rv.MapKeys() {
 		e.Encode(key.Interface())

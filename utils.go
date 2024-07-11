@@ -10,15 +10,7 @@ type DecodeError struct {
 }
 
 func (e *DecodeError) Error() string {
-	return fmt.Sprintf("beancode: %v", e.Msg)
-}
-
-type OutOfBoundsError struct {
-	Current int
-}
-
-func (e *OutOfBoundsError) Error() string {
-	return fmt.Sprintf("beancode: index %v out of bounds", e.Current)
+	return fmt.Sprintf("beancode: decode error, %v", e.Msg)
 }
 
 type InvalidTypeError struct {
@@ -28,4 +20,12 @@ type InvalidTypeError struct {
 
 func (e *InvalidTypeError) Error() string {
 	return fmt.Sprintf("beancode: expected %v, got %v", e.ExpectedType, e.ActualType)
+}
+
+type EncodeError struct {
+	Msg string
+}
+
+func (e *EncodeError) Error() string {
+	return fmt.Sprintf("beancode: encode error, %v", e.Msg)
 }

@@ -23,7 +23,7 @@ func (d *Decoder) Decode(v any) error {
 	}
 
 	if len(data) == 0 {
-		return &DecodeError{"empty input"} // todo
+		return &DecodeError{"empty input"} 
 	}
 
 	var val any
@@ -111,7 +111,7 @@ func (d *Decoder) decodeList(data []byte) ([]any, error) {
 
 	for {
 		if d.idx == len(data) {
-			return nil, &OutOfBoundsError{d.idx} 
+			return nil, &DecodeError{"index out of bounds"}
 		}
 		if data[d.idx] == 'e' {
 			d.idx++
@@ -131,7 +131,7 @@ func (d *Decoder) decodeDict(data []byte) (map[string]any, error) {
 
 	for {
 		if d.idx == len(data) {
-			return nil, &OutOfBoundsError{d.idx}
+			return nil, &DecodeError{"index out of bounds"}
 		}
 		if data[d.idx] == 'e' {
 			d.idx++
@@ -164,7 +164,7 @@ func (d *Decoder) decodeStr(data []byte) (string, error) {
 	start := colon + 1
 	end := start + length
 	if end > len(data) {
-		return "", &OutOfBoundsError{d.idx} 
+		return "", &DecodeError{"index out of bounds"}
 	}
 
 	d.idx = end
