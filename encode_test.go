@@ -59,3 +59,19 @@ func TestEncodeDict(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, want, buf.String())
 }
+
+func TestEncodeStruct(t *testing.T) {
+	var buf bytes.Buffer
+	input := struct {
+		Foo string `beancode:"Foo"`
+		Bar int `beancode:"Bar"`
+	}{
+		Foo: "bar",
+		Bar: 42,
+	}
+	want := "d3:Foo3:bar3:Bari42ee"
+
+	err := NewEncoder(&buf).Encode(input)
+	require.NoError(t, err)
+	require.Equal(t, want, buf.String())
+}

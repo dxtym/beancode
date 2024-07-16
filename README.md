@@ -20,7 +20,7 @@ in := map[string]any{
 		},
 	}
 
-val, err := Marshal(in)
+val, err := beancode.Marshal(in)
 ```
 
 To unmarshal from Bencode:
@@ -28,7 +28,7 @@ To unmarshal from Bencode:
 var out map[string]any
 in := "d3:fool3:boo3:bare3:bood3:fooi100e3:bari100eee"
 
-err := Unmarshal(in, &out)
+err := beancode.Unmarshal(in, &out)
 ```
 
 ## Install
@@ -44,7 +44,10 @@ go get github.com/dxtym/beancode
 
 ## Plans
 
-* Add struct encode/decode feature
+* Add struct decode feature
+* Get rid of external dependencies
+* Work automated testing
+* Have some documentation
 
 ## License
 

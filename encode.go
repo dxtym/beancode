@@ -7,8 +7,6 @@ import (
 	"strconv"
 )
 
-// TODO: define errors
-
 type Encoder struct {
 	w io.Writer
 	buf bytes.Buffer
@@ -35,7 +33,7 @@ func (e *Encoder) Encode(v any) error {
 	case reflect.Map:
 		e.encodeDict(rv)
 	default:
-		// TODO: struct
+		e.encodeStruct(rv)
 	}
 
 	_, err := e.w.Write(e.buf.Bytes())
@@ -58,7 +56,8 @@ func (e *Encoder) encodeStr(rv reflect.Value) {
 }
 
 func (e *Encoder) encodeList(rv reflect.Value) {
-	e.w.Write([]byte{0x6c})
+	e.buf.WriteRune('l')
+	e.w.Write(e.buf.Bytes())
 
     for i := 0; i < rv.Len(); i++ {
         e.Encode(rv.Index(i).Interface())
@@ -69,7 +68,8 @@ func (e *Encoder) encodeList(rv reflect.Value) {
 }
 
 func (e *Encoder) encodeDict(rv reflect.Value) {
-	e.w.Write([]byte{0x64})
+	e.buf.WriteRune('d')
+	e.w.Write(e.buf.Bytes())
 	
 	for _, key := range rv.MapKeys() {
 		e.Encode(key.Interface())
@@ -77,6 +77,20 @@ func (e *Encoder) encodeDict(rv reflect.Value) {
 		e.Encode(val.Interface())
 	}
 	
+	e.buf.Reset()
+	e.buf.WriteRune('e')
+}
+
+func (e *Encoder) encodeStruct(rv reflect.Value) {
+	e.buf.WriteRune('d')
+	e.w.Write(e.buf.Bytes())
+
+	for i := 0; i < rv.NumField(); i++ {
+		f := rv.Type().Field(i)
+		e.Encode(f.Tag.Get("beancode"))
+		e.Encode(rv.FieldByName(f.Name).Interface())
+	}
+
 	e.buf.Reset()
 	e.buf.WriteRune('e')
 }

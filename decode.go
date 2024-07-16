@@ -117,10 +117,12 @@ func (d *Decoder) decodeList(data []byte) ([]any, error) {
 			d.idx++
 			return got, nil
 		}
+
 		val, err := d.decode(data)
 		if err != nil {
 			return nil, err
 		}
+
 		got = append(got, val)
 	}
 }
@@ -137,14 +139,17 @@ func (d *Decoder) decodeDict(data []byte) (map[string]any, error) {
 			d.idx++
 			return got, nil
 		}
+
 		key, err := d.decodeStr(data)
 		if err != nil {
 			return nil, err
 		}
+
 		val, err := d.decode(data)
 		if err != nil {
 			return nil, err
 		}
+		
 		got[key] = val
 	}
 }
