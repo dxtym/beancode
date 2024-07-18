@@ -13,7 +13,7 @@ func TestDecodeEmpty(t *testing.T) {
 	var got string
 	input := ""
 	want := fmt.Errorf("beancode: empty input")
-	
+
 	formatInput := bytes.NewReader([]byte(input))
 	err := NewDecoder(formatInput).Decode(&got)
 	require.EqualError(t, err, want.Error())
@@ -102,6 +102,26 @@ func TestDecodeDict(t *testing.T) {
 	want := map[string]any{
 		"foo": "bar",
 		"bar": []any{"foo", 42},
+	}
+
+	formatInput := bytes.NewReader([]byte(input))
+	err := NewDecoder(formatInput).Decode(&got)
+	require.NoError(t, err)
+	require.Equal(t, want, got)
+}
+
+func TestDecodeStruct(t *testing.T) {
+	var got struct {
+		Foo string `beancode:"Foo"`
+		Bar int    `beancode:"Bar"`
+	}
+	input := "d3:Foo3:bar3:Bari42ee"
+	want := struct {
+		Foo string `beancode:"Foo"`
+		Bar int    `beancode:"Bar"`
+	}{
+		Foo: "bar",
+		Bar: 42,
 	}
 
 	formatInput := bytes.NewReader([]byte(input))

@@ -43,7 +43,7 @@ func BenchmarkUnmarshal(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		Unmarshal(input, got)
-	}	
+	}
 }
 
 func BenchmarkMarshal(b *testing.B) {

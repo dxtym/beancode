@@ -2,7 +2,10 @@ module github.com/dxtym/beancode
 
 go 1.22.4
 
-require github.com/stretchr/testify v1.9.0
+require (
+	github.com/mitchellh/mapstructure v1.5.0
+	github.com/stretchr/testify v1.9.0
+)
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

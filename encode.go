@@ -9,7 +9,7 @@ import (
 )
 
 type Encoder struct {
-	w io.Writer
+	w   io.Writer
 	buf bytes.Buffer
 }
 
@@ -41,6 +41,7 @@ func (e *Encoder) Encode(v any) error {
 	if err != nil {
 		return fmt.Errorf("beancode: %v", err)
 	}
+
 	return nil
 }
 
@@ -60,9 +61,9 @@ func (e *Encoder) encodeList(rv reflect.Value) {
 	e.buf.WriteRune('l')
 	e.w.Write(e.buf.Bytes())
 
-    for i := 0; i < rv.Len(); i++ {
-        e.Encode(rv.Index(i).Interface())
-    }
+	for i := 0; i < rv.Len(); i++ {
+		e.Encode(rv.Index(i).Interface())
+	}
 
 	e.buf.Reset()
 	e.buf.WriteRune('e')
@@ -71,13 +72,13 @@ func (e *Encoder) encodeList(rv reflect.Value) {
 func (e *Encoder) encodeDict(rv reflect.Value) {
 	e.buf.WriteRune('d')
 	e.w.Write(e.buf.Bytes())
-	
+
 	for _, key := range rv.MapKeys() {
 		e.Encode(key.Interface())
 		val := rv.MapIndex(key)
 		e.Encode(val.Interface())
 	}
-	
+
 	e.buf.Reset()
 	e.buf.WriteRune('e')
 }

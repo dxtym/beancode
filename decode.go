@@ -6,10 +6,12 @@ import (
 	"io"
 	"reflect"
 	"strconv"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 type Decoder struct {
-	r     io.Reader
+	r   io.Reader
 	idx int
 }
 
@@ -57,7 +59,7 @@ func (d *Decoder) write(v any, got any) error {
 
 	rv = rv.Elem()
 	rg := reflect.ValueOf(got)
-    switch rv.Kind() {
+	switch rv.Kind() {
 	case reflect.Int:
 		val, ok := got.(int)
 		if !ok {
@@ -70,25 +72,25 @@ func (d *Decoder) write(v any, got any) error {
 			return fmt.Errorf("beancode: expected string, got %v", rg.Type())
 		}
 		rv.Set(reflect.ValueOf(val))
-    case reflect.Slice:
-        val, ok := got.([]any)
-        if !ok {
-            return fmt.Errorf("beancode: expected []any, got %v", rg.Type())
-        }
-        rv.Set(reflect.ValueOf(val))
-    case reflect.Map:
-        val, ok := got.(map[string]any)
-        if !ok {
-            return fmt.Errorf("beancode: expected map[string]any, got %v", rg.Type())
-        }
-        rv.Set(reflect.ValueOf(val))
+	case reflect.Slice:
+		val, ok := got.([]any)
+		if !ok {
+			return fmt.Errorf("beancode: expected []any, got %v", rg.Type())
+		}
+		rv.Set(reflect.ValueOf(val))
+	case reflect.Map:
+		val, ok := got.(map[string]any)
+		if !ok {
+			return fmt.Errorf("beancode: expected map[string]any, got %v", rg.Type())
+		}
+		rv.Set(reflect.ValueOf(val))
 	default:
-		// TODO: struct
-		
-		
-    }
+		if err := mapstructure.Decode(got, &v); err != nil {
+			return fmt.Errorf("beancode: %v", err)
+		}
+	}
 
-    return nil
+	return nil
 }
 
 func (d *Decoder) decodeInt(data []byte) (int, error) {
@@ -116,6 +118,7 @@ func (d *Decoder) decodeList(data []byte) ([]any, error) {
 		if d.idx == len(data) {
 			return nil, fmt.Errorf("beancode: index out of bounds")
 		}
+
 		if data[d.idx] == 'e' {
 			d.idx++
 			return got, nil
@@ -138,6 +141,7 @@ func (d *Decoder) decodeDict(data []byte) (map[string]any, error) {
 		if d.idx == len(data) {
 			return nil, fmt.Errorf("beancode: index out of bounds")
 		}
+
 		if data[d.idx] == 'e' {
 			d.idx++
 			return got, nil
@@ -152,7 +156,7 @@ func (d *Decoder) decodeDict(data []byte) (map[string]any, error) {
 		if err != nil {
 			return nil, err
 		}
-		
+
 		got[key] = val
 	}
 }
