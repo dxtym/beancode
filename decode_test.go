@@ -2,6 +2,7 @@ package beancode
 
 import (
 	"bytes"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -11,7 +12,7 @@ import (
 func TestDecodeEmpty(t *testing.T) {
 	var got string
 	input := ""
-	want := &DecodeError{"empty input"}
+	want := fmt.Errorf("beancode: empty input")
 	
 	formatInput := bytes.NewReader([]byte(input))
 	err := NewDecoder(formatInput).Decode(&got)
@@ -21,7 +22,7 @@ func TestDecodeEmpty(t *testing.T) {
 func TestDecodeInvalidInt(t *testing.T) {
 	var got int
 	input := "3:foo"
-	want := &InvalidTypeError{reflect.TypeFor[int](), reflect.TypeFor[string]()}
+	want := fmt.Errorf("beancode: expected int, got %v", reflect.TypeFor[string]())
 
 	formatInput := bytes.NewReader([]byte(input))
 	err := NewDecoder(formatInput).Decode(&got)
@@ -32,7 +33,7 @@ func TestDecodeInvalidInt(t *testing.T) {
 func TestDecodeInvalidString(t *testing.T) {
 	var got string
 	input := "i42e"
-	want := &InvalidTypeError{reflect.TypeFor[string](), reflect.TypeFor[int]()}
+	want := fmt.Errorf("beancode: expected string, got %v", reflect.TypeFor[int]())
 
 	formatInput := bytes.NewReader([]byte(input))
 	err := NewDecoder(formatInput).Decode(&got)
@@ -43,7 +44,7 @@ func TestDecodeInvalidString(t *testing.T) {
 func TestDecodeInvalidList(t *testing.T) {
 	var got map[string]any
 	input := "li1ei2ei3ee"
-	want := &InvalidTypeError{reflect.TypeFor[map[string]any](), reflect.TypeFor[[]any]()}
+	want := fmt.Errorf("beancode: expected map[string]any, got %v", reflect.TypeFor[[]any]())
 
 	formatInput := bytes.NewReader([]byte(input))
 	err := NewDecoder(formatInput).Decode(&got)
@@ -54,7 +55,7 @@ func TestDecodeInvalidList(t *testing.T) {
 func TestDecodeInvalidDict(t *testing.T) {
 	var got []any
 	input := "d3:fooi1e3:bari2e3:booi3ee"
-	want := &InvalidTypeError{reflect.TypeFor[[]any](), reflect.TypeFor[map[string]any]()}
+	want := fmt.Errorf("beancode: expected []any, got %v", reflect.TypeFor[map[string]any]())
 
 	formatInput := bytes.NewReader([]byte(input))
 	err := NewDecoder(formatInput).Decode(&got)

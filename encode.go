@@ -2,6 +2,7 @@ package beancode
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"reflect"
 	"strconv"
@@ -19,7 +20,7 @@ func NewEncoder(w io.Writer) *Encoder {
 func (e *Encoder) Encode(v any) error {
 	rv := reflect.ValueOf(v)
 	if rv.IsZero() {
-		return &EncodeError{"empty input"}
+		return fmt.Errorf("beancode: zero value")
 	}
 
 	e.buf.Reset()
@@ -38,7 +39,7 @@ func (e *Encoder) Encode(v any) error {
 
 	_, err := e.w.Write(e.buf.Bytes())
 	if err != nil {
-		return &EncodeError{err.Error()}
+		return fmt.Errorf("beancode: %v", err)
 	}
 	return nil
 }

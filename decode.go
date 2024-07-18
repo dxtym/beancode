@@ -2,6 +2,7 @@ package beancode
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"reflect"
 	"strconv"
@@ -19,17 +20,17 @@ func NewDecoder(r io.Reader) *Decoder {
 func (d *Decoder) Decode(v any) error {
 	data, err := io.ReadAll(d.r)
 	if err != nil {
-		return &DecodeError{err.Error()}
+		return fmt.Errorf("beancode: %v", err)
 	}
 
 	if len(data) == 0 {
-		return &DecodeError{"empty input"} 
+		return fmt.Errorf("beancode: empty input")
 	}
 
 	var val any
 	val, err = d.decode(data)
 	if err != nil {
-		return &DecodeError{err.Error()}
+		return fmt.Errorf("beancode: %v", err)
 	}
 
 	return d.write(v, val)
@@ -51,7 +52,7 @@ func (d *Decoder) decode(data []byte) (any, error) {
 func (d *Decoder) write(v any, got any) error {
 	rv := reflect.ValueOf(v)
 	if rv.Kind() != reflect.Ptr || rv.IsNil() {
-		return &InvalidTypeError{reflect.PointerTo(rv.Type()), rv.Type()}
+		return fmt.Errorf("beancode: expected pointer, got %v", rv.Type())
 	}
 
 	rv = rv.Elem()
@@ -60,29 +61,31 @@ func (d *Decoder) write(v any, got any) error {
 	case reflect.Int:
 		val, ok := got.(int)
 		if !ok {
-			return &InvalidTypeError{reflect.TypeFor[int](), rg.Type()}
+			return fmt.Errorf("beancode: expected int, got %v", rg.Type())
 		}
 		rv.Set(reflect.ValueOf(val))
 	case reflect.String:
 		val, ok := got.(string)
 		if !ok {
-			return &InvalidTypeError{reflect.TypeFor[string](), rg.Type()}
+			return fmt.Errorf("beancode: expected string, got %v", rg.Type())
 		}
 		rv.Set(reflect.ValueOf(val))
     case reflect.Slice:
         val, ok := got.([]any)
         if !ok {
-            return &InvalidTypeError{reflect.TypeFor[[]any](), rg.Type()}
+            return fmt.Errorf("beancode: expected []any, got %v", rg.Type())
         }
         rv.Set(reflect.ValueOf(val))
     case reflect.Map:
         val, ok := got.(map[string]any)
         if !ok {
-            return &InvalidTypeError{reflect.TypeFor[map[string]any](), rg.Type()}
+            return fmt.Errorf("beancode: expected map[string]any, got %v", rg.Type())
         }
         rv.Set(reflect.ValueOf(val))
 	default:
 		// TODO: struct
+		
+		
     }
 
     return nil
@@ -92,7 +95,7 @@ func (d *Decoder) decodeInt(data []byte) (int, error) {
 	d.idx++
 	end := bytes.IndexByte(data[d.idx:], 'e')
 	if end == -1 {
-		return 0, &DecodeError{"invalid decode format"}
+		return 0, fmt.Errorf("beancode: invalid decode format")
 	}
 
 	end += d.idx
@@ -111,7 +114,7 @@ func (d *Decoder) decodeList(data []byte) ([]any, error) {
 
 	for {
 		if d.idx == len(data) {
-			return nil, &DecodeError{"index out of bounds"}
+			return nil, fmt.Errorf("beancode: index out of bounds")
 		}
 		if data[d.idx] == 'e' {
 			d.idx++
@@ -133,7 +136,7 @@ func (d *Decoder) decodeDict(data []byte) (map[string]any, error) {
 
 	for {
 		if d.idx == len(data) {
-			return nil, &DecodeError{"index out of bounds"}
+			return nil, fmt.Errorf("beancode: index out of bounds")
 		}
 		if data[d.idx] == 'e' {
 			d.idx++
@@ -157,7 +160,7 @@ func (d *Decoder) decodeDict(data []byte) (map[string]any, error) {
 func (d *Decoder) decodeStr(data []byte) (string, error) {
 	colon := bytes.IndexByte(data[d.idx:], ':')
 	if colon == -1 {
-		return "", &DecodeError{"invalid decode format"}
+		return "", fmt.Errorf("beancode: invalid decode format")
 	}
 
 	colon += d.idx
@@ -169,7 +172,7 @@ func (d *Decoder) decodeStr(data []byte) (string, error) {
 	start := colon + 1
 	end := start + length
 	if end > len(data) {
-		return "", &DecodeError{"index out of bounds"}
+		return "", fmt.Errorf("beancode: index out of bounds")
 	}
 
 	d.idx = end

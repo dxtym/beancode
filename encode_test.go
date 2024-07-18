@@ -2,7 +2,7 @@ package beancode
 
 import (
 	"bytes"
-	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,7 +11,7 @@ import (
 func TestEncodeEmpty(t *testing.T) {
 	var buf bytes.Buffer
 	input := ""
-	want := errors.New("beancode: empty input")
+	want := fmt.Errorf("beancode: zero value")
 
 	err := NewEncoder(&buf).Encode(input)
 	require.EqualError(t, err, want.Error())
