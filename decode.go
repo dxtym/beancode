@@ -84,10 +84,13 @@ func (d *Decoder) write(v any, got any) error {
 			return fmt.Errorf("beancode: expected map[string]any, got %v", rg.Type())
 		}
 		rv.Set(reflect.ValueOf(val))
-	default:
+	case reflect.Struct:
+		// todo: implement mapstructure myself 
 		if err := mapstructure.Decode(got, &v); err != nil {
 			return fmt.Errorf("beancode: %v", err)
 		}
+	default:
+		return fmt.Errorf("beancode: unsupported type %v", rv.Type())
 	}
 
 	return nil

@@ -33,8 +33,10 @@ func (e *Encoder) Encode(v any) error {
 		e.encodeList(rv)
 	case reflect.Map:
 		e.encodeDict(rv)
-	default:
+	case reflect.Struct:
 		e.encodeStruct(rv)
+	default:
+		return fmt.Errorf("beancode: unsupported type %v", rv.Type())
 	}
 
 	_, err := e.w.Write(e.buf.Bytes())

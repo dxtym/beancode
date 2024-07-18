@@ -12,7 +12,7 @@ Working with BitTorrent? You need Beancode.
 
 To marshal into Bencode:
 ```go
-in := struct {
+from := struct {
 	Foo []string `bencode:"foo"`
 	Boo struct {
 		Foo int `bencode:"foo"`
@@ -29,21 +29,21 @@ in := struct {
 	},
 }
 
-val, err := beancode.Marshal(in)
+val, err := beancode.Marshal(from)
 ```
 
 To unmarshal from Bencode:
 ```go
-var out struct {
+var to struct {
 	Foo []string `bencode:"foo"`
 	Boo struct {
 		Foo int `bencode:"foo"`
 		Bar int `bencode:"bar"`
 	} `bencode:"boo"`
 }
-in := "d3:fool3:boo3:bare3:bood3:fooi100e3:bari100eee"
+from := "d3:fool3:boo3:bare3:bood3:fooi100e3:bari100eee"
 
-err := beancode.Unmarshal(in, &out)
+err := beancode.Unmarshal(from, &to)
 ```
 
 ## Install
@@ -56,14 +56,11 @@ go get github.com/dxtym/beancode
 
 Covered on AMD Ryzen 3 4300U with Radeon Graphics (8GB RAM).
 
-* Marshal: 1787 ns/op, 457 B/op, 19 allocs/op
-* Unmarshal: 1397 ns/op, 1435 B/op, 19 allocs/op
+* Marshal: 2535 ns/op, 454 B/op, 16 allocs/op
+* Unmarshal: 2658 ns/op, 1499 B/op, 21 allocs/op
 
 ## Plans
 
-* Add struct decode feature
-* Get rid of external dependencies
-* Work automated testing
 * Have some documentation
 
 ## License
