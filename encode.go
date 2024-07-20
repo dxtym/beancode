@@ -8,6 +8,16 @@ import (
 	"strconv"
 )
 
+// better error handling
+type EncodeError struct {
+	Type string
+	Err error
+}
+
+func (e *EncodeError) Error() string {
+	return fmt.Sprintf("beancode: %s - %s", e.Type, e.Err.Error())
+}
+
 type Encoder struct {
 	w   io.Writer
 	buf bytes.Buffer
@@ -19,8 +29,11 @@ func NewEncoder(w io.Writer) *Encoder {
 
 func (e *Encoder) Encode(v any) error {
 	rv := reflect.ValueOf(v)
-	if rv.IsZero() {
-		return fmt.Errorf("beancode: zero value")
+	if rv.IsZero() || !rv.IsValid() {
+		return &EncodeError{
+			Type: "zero or nil value", 
+			Err: fmt.Errorf("cannot encode zero or nil value"),
+		}
 	}
 
 	e.buf.Reset()
@@ -36,12 +49,18 @@ func (e *Encoder) Encode(v any) error {
 	case reflect.Struct:
 		e.encodeStruct(rv)
 	default:
-		return fmt.Errorf("beancode: unsupported type %v", rv.Type())
+		return &EncodeError{
+			Type: "unsupported type",
+			Err: fmt.Errorf("cannot encode type %s", rv.Type().Name()),
+		}
 	}
 
 	_, err := e.w.Write(e.buf.Bytes())
 	if err != nil {
-		return fmt.Errorf("beancode: %v", err)
+		return &EncodeError{
+			Type: "internal error",
+			Err: fmt.Errorf("cannot write to writer: %w", err),
+		}
 	}
 
 	return nil
@@ -49,7 +68,11 @@ func (e *Encoder) Encode(v any) error {
 
 func (e *Encoder) encodeInt(rv reflect.Value) {
 	e.buf.WriteRune('i')
-	e.buf.WriteString(strconv.Itoa(int(rv.Int())))
+	
+	if v, ok := rv.Interface().(int); ok {
+		e.buf.WriteString(strconv.Itoa(v))
+	}
+	
 	e.buf.WriteRune('e')
 }
 
@@ -60,9 +83,8 @@ func (e *Encoder) encodeStr(rv reflect.Value) {
 }
 
 func (e *Encoder) encodeList(rv reflect.Value) {
-	e.buf.WriteRune('l')
-	e.w.Write(e.buf.Bytes())
-
+	e.w.Write([]byte{'l'})
+	
 	for i := 0; i < rv.Len(); i++ {
 		e.Encode(rv.Index(i).Interface())
 	}
@@ -72,29 +94,27 @@ func (e *Encoder) encodeList(rv reflect.Value) {
 }
 
 func (e *Encoder) encodeDict(rv reflect.Value) {
-	e.buf.WriteRune('d')
-	e.w.Write(e.buf.Bytes())
+	e.w.Write([]byte{'d'}) 
 
-	for _, key := range rv.MapKeys() {
-		e.Encode(key.Interface())
-		val := rv.MapIndex(key)
-		e.Encode(val.Interface())
+	iter := rv.MapRange() // to keep the order of keys
+	for iter.Next() {
+		e.Encode(iter.Key().Interface())
+		e.Encode(iter.Value().Interface())
 	}
-
+	
 	e.buf.Reset()
 	e.buf.WriteRune('e')
 }
 
 func (e *Encoder) encodeStruct(rv reflect.Value) {
-	e.buf.WriteRune('d')
-	e.w.Write(e.buf.Bytes())
-
+	e.w.Write([]byte{'d'})
+	
 	for i := 0; i < rv.NumField(); i++ {
 		f := rv.Type().Field(i)
 		e.Encode(f.Tag.Get("beancode"))
 		e.Encode(rv.FieldByName(f.Name).Interface())
 	}
-
+	
 	e.buf.Reset()
 	e.buf.WriteRune('e')
 }

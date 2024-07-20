@@ -17,15 +17,39 @@ func TestEncodeInvalid(t *testing.T) {
 	}{
 		{
 			id:   0,
-			name:  "zero value",
+			name:  "zero or nil",
 			input: "",
-			want:  fmt.Errorf("beancode: zero value"),
+			want:  &EncodeError{
+				Type: "zero or nil value",
+				Err: fmt.Errorf("cannot encode zero or nil value"),
+			},
 		},
 		{
-			id:   1,
+			id: 1,
+			name: "zero or nil",
+			input: (*int)(nil),
+			want: &EncodeError{
+				Type: "zero or nil value",
+				Err: fmt.Errorf("cannot encode zero or nil value"),
+			},
+		},
+		{
+			id:   2,
 			name:  "unsupported type",
 			input: 42.0,
-			want:  fmt.Errorf("beancode: unsupported type float64"),
+			want:  &EncodeError{
+				Type: "unsupported type",
+				Err: fmt.Errorf("cannot encode type float64"),
+			},
+		},
+		{
+			id: 3,
+			name: "unsupported type",
+			input: true,
+			want: &EncodeError{
+				Type: "unsupported type",
+				Err: fmt.Errorf("cannot encode type bool"),
+			},
 		},
 	}
 
@@ -76,13 +100,13 @@ func TestEncodeValid(t *testing.T) {
 			id: 4,
 			name: "struct",
 			input: struct {
-				Foo string `beancode:"Foo"`
-				Bar int    `beancode:"Bar"`
+				Foo string `beancode:"foo"`
+				Bar int    `beancode:"bar"`
 			}{
 				Foo: "bar",
 				Bar: 42,
 			},
-			want: "d3:Foo3:bar3:Bari42ee",
+			want: "d3:foo3:bar3:bari42ee",
 		},
 	}
 
