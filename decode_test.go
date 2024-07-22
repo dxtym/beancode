@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO: update testcase based on new err types
 func TestDecodeInvalid(t *testing.T) {
 	testCases := []struct {
 		id    int

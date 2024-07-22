@@ -5,46 +5,34 @@ Working with BitTorrent? You need Beancode.
 ## Features
 
 * Easy API based on stdlib
-* Almost full unit test coverage
-* Support int, str, array, and map
+* Almost full unit test coverage: 86%
+* Support int, string, slice, map, and struct
 
 ## Usage
 
+Let's define a common struct for encoding and decoding processes:
+```go
+type Boo struct {
+	Foo int `beancode:"foo"`
+	Bar string `Beancode:"bar"`
+}
+```
+
 To marshal into Bencode:
 ```go
-from := struct {
-	Foo []string `bencode:"foo"`
-	Boo struct {
-		Foo int `bencode:"foo"`
-		Bar int `bencode:"bar"`
-	} `bencode:"boo"`
-}{
-	Foo: []string{"boo", "foo"},
-	Boo: struct {
-		Foo int `bencode:"foo"`
-		Bar int `bencode:"bar"`
-	}{
-		Foo: 100,
-		Bar: 100,
-	},
-}
-
+from := Boo{Foo: 42, Bar: "qux"}
 val, err := beancode.Marshal(from)
 ```
 
 To unmarshal from Bencode:
 ```go
-var to struct {
-	Foo []string `bencode:"foo"`
-	Boo struct {
-		Foo int `bencode:"foo"`
-		Bar int `bencode:"bar"`
-	} `bencode:"boo"`
-}
-from := "d3:fool3:boo3:bare3:bood3:fooi100e3:bari100eee"
+var to Boo
+from := "d3:fooi42e3:bar3:quxe"
 
 err := beancode.Unmarshal(from, &to)
 ```
+
+Voila, as simple as that!
 
 ## Install
 
@@ -56,11 +44,13 @@ go get github.com/dxtym/beancode
 
 Covered on AMD Ryzen 3 4300U with Radeon Graphics (8GB RAM).
 
-* Marshal: 2535 ns/op, 454 B/op, 16 allocs/op
-* Unmarshal: 2658 ns/op, 1499 B/op, 21 allocs/op
+* Marshal: 3652 ns/op, 361 B/op, 17 allocs/op
+* Unmarshal: 3672 ns/op, 1515 B/op, 22 allocs/op
 
 ## Plans
 
+* Implement decode to struct
+* Enhance benchmark performance
 * Have some documentation
 
 ## License
