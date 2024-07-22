@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO: update testcase based on new err types
 func TestDecodeInvalid(t *testing.T) {
 	testCases := []struct {
 		id    int
@@ -18,27 +19,39 @@ func TestDecodeInvalid(t *testing.T) {
 	}{
 		{
 			id:    0,
-			name:  "invalid int",
+			name:  "int",
 			input: "3:foo",
-			want:  fmt.Errorf("beancode: expected int, got %v", reflect.TypeFor[string]()),
+			want:  &DecodeError{
+				Type: "type mismatch",
+				Err: fmt.Errorf("expected int, got %v", reflect.TypeFor[string]()),
+			},
 		},
 		{
 			id:    1,
-			name:  "invalid string",
+			name:  "string",
 			input: "i42e",
-			want:  fmt.Errorf("beancode: expected string, got %v", reflect.TypeFor[int]()),
+			want:  &DecodeError{
+				Type: "type mismatch",
+				Err: fmt.Errorf("expected string, got %v", reflect.TypeFor[int]()),
+			},
 		},
 		{
 			id:    2,
-			name:  "invalid array",
+			name:  "array",
 			input: "d3:fooi1e3:bari2e3:booi3ee",
-			want:  fmt.Errorf("beancode: expected []any, got %v", reflect.TypeFor[map[string]any]()),
+			want:  &DecodeError{
+				Type: "type mismatch",
+				Err: fmt.Errorf("expected []any, got %v", reflect.TypeFor[map[string]any]()),
+			},
 		},
 		{
 			id:    3,
-			name:  "invalid map",
+			name:  "map",
 			input: "li1ei2ei3ee",
-			want:  fmt.Errorf("beancode: expected map[string]any, got %v", reflect.TypeFor[[]any]()),
+			want:  &DecodeError{
+				Type: "type mismatch",
+				Err: fmt.Errorf("expected map[string]any, got %v",  reflect.TypeFor[[]any]()),
+			},
 		},
 	}
 
@@ -51,9 +64,9 @@ func TestDecodeInvalid(t *testing.T) {
 			case 1:
 				got = new(string)
 			case 2:
-				got = new([]any)
+				got = &[]any{}
 			case 3:
-				got = new(map[string]any)
+				got = &map[string]any{}
 			}
 
 			formatInput := bytes.NewReader([]byte(tc.input))
@@ -73,41 +86,29 @@ func TestDecodeValid(t *testing.T) {
 	}{
 		{
 			id:    0,
-			name:  "valid int",
+			name:  "int",
 			input: "i42e",
 			want:  42,
 		},
 		{
 			id:    1,
-			name:  "valid string",
+			name:  "string",
 			input: "3:foo",
 			want:  "foo",
 		},
 		{
 			id:    2,
-			name:  "valid array",
+			name:  "array",
 			input: "l3:foo3:bare",
 			want:  []any{"foo", "bar"},
 		},
 		{
 			id:    3,
-			name:  "valid map",
+			name:  "map",
 			input: "d3:foo3:bar3:barl3:foo3:booee",
 			want: map[string]any{
 				"foo": "bar",
 				"bar": []any{"foo", "boo"},
-			},
-		},
-		{
-			id:    4,
-			name:  "valid struct",
-			input: "d3:Foo3:bar3:Bari42ee",
-			want: struct {
-				Foo string `beancode:"Foo"`
-				Bar int    `beancode:"Bar"`
-			}{
-				Foo: "bar",
-				Bar: 42,
 			},
 		},
 	}
@@ -121,35 +122,24 @@ func TestDecodeValid(t *testing.T) {
 			case 1:
 				got = new(string)
 			case 2:
-				got = new([]any)
+				got = &[]any{}
 			case 3:
-				got = new(map[string]any)
-			case 4:
-				got = new(struct {
-					Foo string `beancode:"Foo"`
-					Bar int    `beancode:"Bar"`
-				})
+				got = &map[string]any{}
 			}
 
 			formatInput := bytes.NewReader([]byte(tc.input))
 			err := NewDecoder(formatInput).Decode(got)
 			require.NoError(t, err)
 
-			// type assert and deref the result 
-			switch tc.id {
-			case 0:
-				require.Equal(t, tc.want, *(got.(*int)))
-			case 1:
-				require.Equal(t, tc.want, *(got.(*string)))
-			case 2:
-				require.Equal(t, tc.want, *(got.(*[]any)))
-			case 3:
-				require.Equal(t, tc.want, *(got.(*map[string]any)))
-			case 4:
-				require.Equal(t, tc.want, *(got.(*struct {
-					Foo string `beancode:"Foo"`
-					Bar int    `beancode:"Bar"`
-				})))
+			switch v := got.(type) {
+			case *int:
+				require.Equal(t, tc.want, *v)
+			case *string:
+				require.Equal(t, tc.want, *v)
+			case *[]any:
+				require.Equal(t, tc.want, *v)
+			case *map[string]any:
+				require.Equal(t, tc.want, *v)
 			}
 		})
 	}

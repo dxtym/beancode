@@ -15,7 +15,7 @@ type EncodeError struct {
 }
 
 func (e *EncodeError) Error() string {
-	return fmt.Sprintf("beancode: %s - %s", e.Type, e.Err.Error())
+	return fmt.Sprintf("beancode: %s: %s", e.Type, e.Err.Error())
 }
 
 type Encoder struct {
